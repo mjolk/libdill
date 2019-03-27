@@ -1,3 +1,9 @@
+/**
+ * File   : libdill.h
+ * License: MIT/X11
+ * Author : Dries Pauwels <2mjolk@gmail.com>
+ * Date   : ma 11 mrt 2019 07:52
+ */
 /*
 
   Copyright (c) 2017 Martin Sustrik
@@ -502,6 +508,10 @@ DILL_EXPORT int dill_tcp_accept(
     int s,
     struct dill_ipaddr *addr,
     int64_t deadline);
+DILL_EXPORT int dill_tcp_accept_raw(
+    int s,
+    struct dill_ipaddr *addr,
+    int64_t deadline);
 DILL_EXPORT int dill_tcp_accept_mem(
     int s,
     struct dill_ipaddr *addr,
@@ -538,6 +548,7 @@ DILL_EXPORT int dill_tcp_fromfd_mem(
 #define tcp_listen_mem dill_tcp_listen_mem
 #define tcp_accept dill_tcp_accept
 #define tcp_accept_mem dill_tcp_accept_mem
+#define tcp_accept_raw dill_tcp_accept_raw
 #define tcp_connect dill_tcp_connect
 #define tcp_connect_mem dill_tcp_connect_mem
 #define tcp_done dill_tcp_done
