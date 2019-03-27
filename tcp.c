@@ -1,3 +1,9 @@
+/**
+ * File   : tcp.c
+ * License: MIT/X11
+ * Author : Dries Pauwels <2mjolk@gmail.com>
+ * Date   : ma 11 mrt 2019 07:37
+ */
 /*
 
   Copyright (c) 2017 Martin Sustrik
@@ -391,6 +397,27 @@ int dill_tcp_accept_mem(int s, struct dill_ipaddr *addr,
     int h = dill_tcp_makeconn(as, mem);
     if(dill_slow(h < 0)) {err = errno; goto error2;}
     return h;
+error2:
+    dill_fd_close(as);
+error1:
+    errno = err;
+    return -1;
+}
+
+int dill_tcp_accept_raw(int s, struct dill_ipaddr *addr, int64_t deadline) {
+    int err;
+    /* Retrieve the listener object. */
+    struct dill_tcp_listener *lst = dill_hquery(s, dill_tcp_listener_type);
+    if(dill_slow(!lst)) {err = errno; goto error1;}
+    /* Try to get new connection in a non-blocking way. */
+    socklen_t addrlen = sizeof(struct dill_ipaddr);
+    int as = dill_fd_accept(lst->fd, (struct sockaddr*)addr, &addrlen,
+        deadline);
+    if(dill_slow(as < 0)) {err = errno; goto error1;}
+    /* Set it to non-blocking mode. */
+    int rc = dill_fd_unblock(as);
+    if(dill_slow(rc < 0)) {err = errno; goto error2;}
+    return as;
 error2:
     dill_fd_close(as);
 error1:
