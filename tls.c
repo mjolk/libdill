@@ -1,24 +1,24 @@
 /*
 
-  Copyright (c) 2018 Martin Sustrik
+   Copyright (c) 2018 Martin Sustrik
 
-  Permission is hereby granted, free of charge, to any person obtaining a copy
-  of this software and associated documentation files (the "Software"),
-  to deal in the Software without restriction, including without limitation
-  the rights to use, copy, modify, merge, publish, distribute, sublicense,
-  and/or sell copies of the Software, and to permit persons to whom
-  the Software is furnished to do so, subject to the following conditions:
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software and associated documentation files (the "Software"),
+   to deal in the Software without restriction, including without limitation
+   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom
+   the Software is furnished to do so, subject to the following conditions:
 
-  The above copyright notice and this permission notice shall be included
-  in all copies or substantial portions of the Software.
+   The above copyright notice and this permission notice shall be included
+   in all copies or substantial portions of the Software.
 
-  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-  IN THE SOFTWARE.
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+   IN THE SOFTWARE.
 
 */
 
@@ -53,16 +53,16 @@ struct dill_tls_sock {
 
 DILL_CHECK_STORAGE(dill_tls_sock, dill_tls_storage)
 
-static void dill_tls_init(void);
-static BIO *dill_tls_new_cbio(void *mem);
-static int dill_tls_followup(struct dill_tls_sock *self, int rc);
+    static void dill_tls_init(void);
+    static BIO *dill_tls_new_cbio(void *mem);
+    static int dill_tls_followup(struct dill_tls_sock *self, int rc);
 
-static void *dill_tls_hquery(struct dill_hvfs *hvfs, const void *type);
-static void dill_tls_hclose(struct dill_hvfs *hvfs);
-static int dill_tls_bsendl(struct dill_bsock_vfs *bvfs,
-    struct dill_iolist *first, struct dill_iolist *last, int64_t deadline);
+    static void *dill_tls_hquery(struct dill_hvfs *hvfs, const void *type);
+    static void dill_tls_hclose(struct dill_hvfs *hvfs);
+    static int dill_tls_bsendl(struct dill_bsock_vfs *bvfs,
+            struct dill_iolist *first, struct dill_iolist *last, int64_t deadline);
 static int dill_tls_brecvl(struct dill_bsock_vfs *bvfs,
-    struct dill_iolist *first, struct dill_iolist *last, int64_t deadline);
+        struct dill_iolist *first, struct dill_iolist *last, int64_t deadline);
 
 static void *dill_tls_hquery(struct dill_hvfs *hvfs, const void *type) {
     struct dill_tls_sock *self = (struct dill_tls_sock*)hvfs;
@@ -73,7 +73,7 @@ static void *dill_tls_hquery(struct dill_hvfs *hvfs, const void *type) {
 }
 
 int dill_tls_attach_client_mem(int s, struct dill_tls_storage *mem,
-      int64_t deadline) {
+        int64_t deadline) {
     int err;
     if(dill_slow(!mem)) {err = EINVAL; goto error1;}
     /* Check whether underlying socket is a bytestream. */
@@ -89,11 +89,11 @@ int dill_tls_attach_client_mem(int s, struct dill_tls_storage *mem,
     /* Create OpenSSL connection object. */
     SSL *ssl = SSL_new(ctx);
     if(dill_slow(!ssl)) {err = EFAULT; goto error2;}
-	  SSL_set_connect_state(ssl);
+    SSL_set_connect_state(ssl);
     /* Create a BIO and attach it to the connection. */
     BIO *bio = dill_tls_new_cbio(mem);
     if(dill_slow(!bio)) {err = errno; goto error3;}
-	  SSL_set_bio(ssl, bio, bio);
+    SSL_set_bio(ssl, bio, bio);
     /* Take ownership of the underlying socket. */
     s = dill_hown(s);
     if(dill_slow(s < 0)) {err = errno; goto error1;}
@@ -140,7 +140,7 @@ int dill_tls_attach_client(int s, int64_t deadline) {
     struct dill_tls_sock *obj = malloc(sizeof(struct dill_tls_sock));
     if(dill_slow(!obj)) {err = ENOMEM; goto error1;}
     s = dill_tls_attach_client_mem(s, (struct dill_tls_storage*)obj,
-        deadline);
+            deadline);
     if(dill_slow(s < 0)) {err = errno; goto error2;}
     obj->mem = 0;
     return s;
@@ -153,7 +153,7 @@ error1:
 }
 
 int dill_tls_attach_server_mem(int s, const char *cert, const char *pkey,
-      struct dill_tls_storage *mem, int64_t deadline) {
+        struct dill_tls_storage *mem, int64_t deadline) {
     int err;
     if(dill_slow(!mem)) {err = EINVAL; goto error1;}
     /* Check whether underlying socket is a bytestream. */
@@ -175,11 +175,11 @@ int dill_tls_attach_server_mem(int s, const char *cert, const char *pkey,
     /* Create OpenSSL connection object. */
     SSL *ssl = SSL_new(ctx);
     if(dill_slow(!ssl)) {err = EFAULT; goto error2;}
-	  SSL_set_accept_state(ssl);
+    SSL_set_accept_state(ssl);
     /* Create a BIO and attach it to the connection. */
     BIO *bio = dill_tls_new_cbio(mem);
     if(dill_slow(!bio)) {err = errno; goto error3;}
-	  SSL_set_bio(ssl, bio, bio);
+    SSL_set_bio(ssl, bio, bio);
     /* Take ownership of the underlying socket. */
     s = dill_hown(s);
     if(dill_slow(s < 0)) {err = errno; goto error1;}
@@ -222,12 +222,12 @@ error1:
 }
 
 int dill_tls_attach_server(int s, const char *cert, const char *pkey,
-      int64_t deadline) {
+        int64_t deadline) {
     int err;
     struct dill_tls_sock *obj = malloc(sizeof(struct dill_tls_sock));
     if(dill_slow(!obj)) {err = ENOMEM; goto error1;}
     s = dill_tls_attach_server_mem(s, cert, pkey,
-        (struct dill_tls_storage*)obj, deadline);
+            (struct dill_tls_storage*)obj, deadline);
     if(dill_slow(s < 0)) {err = errno; goto error2;}
     obj->mem = 0;
     return s;
@@ -286,7 +286,7 @@ error:
 }
 
 static int dill_tls_bsendl(struct dill_bsock_vfs *bvfs,
-      struct dill_iolist *first, struct dill_iolist *last, int64_t deadline) {
+        struct dill_iolist *first, struct dill_iolist *last, int64_t deadline) {
     struct dill_tls_sock *self = dill_cont(bvfs, struct dill_tls_sock, bvfs);
     if(dill_slow(self->outdone)) {errno = EPIPE; return -1;}
     if(dill_slow(self->outerr)) {errno = ECONNRESET; return -1;}
@@ -314,7 +314,7 @@ static int dill_tls_bsendl(struct dill_bsock_vfs *bvfs,
 }
 
 static int dill_tls_brecvl(struct dill_bsock_vfs *bvfs,
-      struct dill_iolist *first, struct dill_iolist *last, int64_t deadline) {
+        struct dill_iolist *first, struct dill_iolist *last, int64_t deadline) {
     struct dill_tls_sock *self = dill_cont(bvfs, struct dill_tls_sock, bvfs);
     if(dill_slow(self->indone)) {errno = EPIPE; return -1;}
     if(dill_slow(self->inerr)) {errno = ECONNRESET; return -1;}
@@ -382,32 +382,32 @@ static int dill_tls_followup(struct dill_tls_sock *self, int rc) {
     char errstr[120];
     int code = SSL_get_error(self->ssl, rc);
     switch(code) {
-	  case SSL_ERROR_NONE:
-        /* Operation finished. */
-        errno = 0;
-        return 1;
-	  case SSL_ERROR_ZERO_RETURN:
-        /* Connection terminated by peer. */
-        errno = EPIPE;
-        return 1;
-    case SSL_ERROR_SYSCALL:
-        /* Error from our custom BIO. */
-        dill_assert(rc == -1);
-        if(errno == 0) return 0;
-        return 1;
-    case SSL_ERROR_SSL:        
-        dill_tls_process_errors();
-        return 1;
-    case SSL_ERROR_WANT_READ:
-    case SSL_ERROR_WANT_WRITE:
-        /* These two should never happen -- our custom BIO is blocking. */
-        dill_assert(0);
-    default:
-        /* Unexpected error. Let's at least print out current error queue
-           for debugging purposes. */
-        fprintf(stderr, "SSL error code: %d\n", code);
-        dill_tls_process_errors();
-        dill_assert(0);
+        case SSL_ERROR_NONE:
+            /* Operation finished. */
+            errno = 0;
+            return 1;
+        case SSL_ERROR_ZERO_RETURN:
+            /* Connection terminated by peer. */
+            errno = EPIPE;
+            return 1;
+        case SSL_ERROR_SYSCALL:
+            /* Error from our custom BIO. */
+            dill_assert(rc == -1);
+            if(errno == 0) return 0;
+            return 1;
+        case SSL_ERROR_SSL:        
+            dill_tls_process_errors();
+            return 1;
+        case SSL_ERROR_WANT_READ:
+        case SSL_ERROR_WANT_WRITE:
+            /* These two should never happen -- our custom BIO is blocking. */
+            dill_assert(0);
+        default:
+            /* Unexpected error. Let's at least print out current error queue
+               for debugging purposes. */
+            fprintf(stderr, "SSL error code: %d\n", code);
+            dill_tls_process_errors();
+            dill_assert(0);
     }
 }
 
@@ -449,13 +449,17 @@ static int dill_tls_cbio_read(BIO *bio, char *buf, int len) {
 
 static long dill_tls_cbio_ctrl(BIO *bio, int cmd, long larg, void *parg) {
     switch(cmd) {
-    case BIO_CTRL_FLUSH:
-        return 1;
-    case BIO_CTRL_PUSH:
-    case BIO_CTRL_POP:
-        return 0;
-    default:
-        dill_assert(0);
+        case BIO_CTRL_FLUSH:
+            return 1;
+        case BIO_CTRL_PUSH:
+        case BIO_CTRL_POP:
+        case BIO_CTRL_GET_KTLS_SEND:
+        case BIO_CTRL_GET_KTLS_RECV:
+        case BIO_CTRL_EOF:
+            return 0;
+        default:
+            printf("unhandles command BIO: %d \n", cmd);
+            dill_assert(0);
     }
 }
 
