@@ -1,9 +1,3 @@
-/**
- * File   : tcp.c
- * License: MIT/X11
- * Author : Dries Pauwels <2mjolk@gmail.com>
- * Date   : ma 11 mrt 2019 07:37
- */
 /*
 
   Copyright (c) 2017 Martin Sustrik
@@ -183,7 +177,7 @@ static int dill_tcp_bsendl(struct dill_bsock_vfs *bvfs,
     ssize_t sz = dill_fd_send(self->fd, first, last, deadline);
     self->sbusy = 0;
     if(dill_fast(sz >= 0)) return sz;
-    self->outerr = 1;
+    if(errno != ETIMEDOUT) self->outerr = 1;
     return -1;
 }
 
@@ -198,7 +192,7 @@ static int dill_tcp_brecvl(struct dill_bsock_vfs *bvfs,
     self->rbusy = 0;
     if(dill_fast(rc == 0)) return 0;
     if(errno == EPIPE) self->indone = 1;
-    else self->inerr = 1;
+    else if(errno != ETIMEDOUT) self->inerr = 1;
     return -1;
 }
 
