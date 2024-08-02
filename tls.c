@@ -392,8 +392,8 @@ static int dill_tls_followup(struct dill_tls_sock *self, int rc) {
             return 1;
         case SSL_ERROR_SYSCALL:
             /* Error from our custom BIO. */
-            dill_assert(rc == -1);
-            if(errno == 0) return 0;
+            //dill_assert(rc == -1);
+            if(errno == 0 || errno == ETIMEDOUT) return 0;
             return 1;
         case SSL_ERROR_SSL:        
             dill_tls_process_errors();
