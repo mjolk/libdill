@@ -27,7 +27,6 @@
 #include <string.h>
 #include <sys/un.h>
 #include <unistd.h>
-#include <cerrno>
 
 #define DILL_DISABLE_RAW_NAMES
 #include "libdillimpl.h"
