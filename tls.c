@@ -300,7 +300,7 @@ static int dill_tls_bsendl(struct dill_bsock_vfs *bvfs,
             int rc = SSL_write(self->ssl, base, len);
             if(dill_tls_followup(self, rc)) {
                 if(dill_slow(errno != 0)) {
-                    if(errno != ETIMEDOUT) self->outerr = 1;
+                    self->outerr = 1;
                     return -1;
                 }
                 base += rc;
@@ -317,7 +317,7 @@ static int dill_tls_brecvl(struct dill_bsock_vfs *bvfs,
         struct dill_iolist *first, struct dill_iolist *last, int64_t deadline) {
     struct dill_tls_sock *self = dill_cont(bvfs, struct dill_tls_sock, bvfs);
     if(dill_slow(self->indone)) {errno = EPIPE; return -1;}
-    if(dill_slow(self->inerr)) { errno = ECONNRESET; return -1;}
+    if(dill_slow(self->inerr)) {errno = ECONNRESET; return -1;}
     self->deadline = deadline;
     struct dill_iolist *it = first;
     while(1) {
@@ -329,7 +329,7 @@ static int dill_tls_brecvl(struct dill_bsock_vfs *bvfs,
             if(dill_tls_followup(self, rc)) {
                 if(dill_slow(errno != 0)) {
                     if(errno == EPIPE) self->indone = 1;
-                    else if(errno != ETIMEDOUT) self->inerr = 1;
+                    else self->inerr = 1;
                     return -1;
                 }
                 if(rc == len) break;
