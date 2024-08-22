@@ -1,3 +1,9 @@
+/**
+ * File   : libdill.h
+ * License: MIT/X11
+ * Author : Dries Pauwels <2mjolk@gmail.com>
+ * Date   : ma 11 mrt 2019 07:52
+ */
 /*
 
   Copyright (c) 2017 Martin Sustrik
@@ -65,7 +71,7 @@
 #if DILL_NO_EXPORTS
 #define DILL_EXPORT
 #else
-#define DILL_EXPORT __attribute__((visibility("default")))
+#define DILL_EXPORT __attribute__ ((visibility("default")))
 #endif
 
 /* Old versions of GCC don't support visibility attribute. */
@@ -87,7 +93,7 @@ extern "C" {
  */
 
 #if (defined __arm__) || (defined __thumb__)
-#define DILL_ALIGN __attribute__((aligned(__SIZEOF_POINTER__)))
+#define DILL_ALIGN __attribute__ ((aligned(__SIZEOF_POINTER__)))
 #else
 #define DILL_ALIGN
 #endif
@@ -131,10 +137,7 @@ DILL_EXPORT int dill_hclose(int h);
 DILL_EXPORT extern volatile void *dill_unoptimisable;
 
 DILL_EXPORT __attribute__((noinline)) int dill_prologue(sigjmp_buf **ctx,
-                                                        void **ptr, size_t len,
-                                                        int bndl,
-                                                        const char *file,
-                                                        int line);
+    void **ptr, size_t len, int bndl, const char *file, int line);
 DILL_EXPORT __attribute__((noinline)) void dill_epilogue(void);
 
 /* The following macros use alloca(sizeof(size_t)) because clang
@@ -146,89 +149,83 @@ DILL_EXPORT __attribute__((noinline)) void dill_epilogue(void);
 
 /* Stack-switching on X86-64. */
 #if defined(__x86_64__) && !defined DILL_ARCH_FALLBACK
-#define dill_setjmp(ctx)                                                  \
-  __extension__({                                                         \
-    int ret;                                                              \
-    asm("lea     LJMPRET%=(%%rip), %%rcx\n\t"                             \
-        "xor     %%rax, %%rax\n\t"                                        \
-        "mov     %%rbx, (%%rdx)\n\t"                                      \
-        "mov     %%rbp, 8(%%rdx)\n\t"                                     \
-        "mov     %%r12, 16(%%rdx)\n\t"                                    \
-        "mov     %%r13, 24(%%rdx)\n\t"                                    \
-        "mov     %%r14, 32(%%rdx)\n\t"                                    \
-        "mov     %%r15, 40(%%rdx)\n\t"                                    \
-        "mov     %%rsp, 48(%%rdx)\n\t"                                    \
-        "mov     %%rcx, 56(%%rdx)\n\t"                                    \
-        "LJMPRET%=:\n\t"                                                  \
-        : "=a"(ret)                                                       \
-        : "d"(ctx)                                                        \
-        : "memory", "rcx", "rsi", "rdi", "r8", "r9", "r10", "r11", "cc"); \
-    ret;                                                                  \
-  })
-#define dill_longjmp(ctx)           \
-  asm("movq   56(%%rdx), %%rcx\n\t" \
-      "movq   48(%%rdx), %%rsp\n\t" \
-      "movq   40(%%rdx), %%r15\n\t" \
-      "movq   32(%%rdx), %%r14\n\t" \
-      "movq   24(%%rdx), %%r13\n\t" \
-      "movq   16(%%rdx), %%r12\n\t" \
-      "movq   8(%%rdx), %%rbp\n\t"  \
-      "movq   (%%rdx), %%rbx\n\t"   \
-      ".cfi_def_cfa %%rdx, 0 \n\t"  \
-      ".cfi_offset %%rbx, 0 \n\t"   \
-      ".cfi_offset %%rbp, 8 \n\t"   \
-      ".cfi_offset %%r12, 16 \n\t"  \
-      ".cfi_offset %%r13, 24 \n\t"  \
-      ".cfi_offset %%r14, 32 \n\t"  \
-      ".cfi_offset %%r15, 40 \n\t"  \
-      ".cfi_offset %%rsp, 48 \n\t"  \
-      ".cfi_offset %%rip, 56 \n\t"  \
-      "jmp    *%%rcx\n\t"           \
-      :                             \
-      : "d"(ctx), "a"(1))
-#define dill_setsp(x)                    \
-  asm("" ::"r"(alloca(sizeof(size_t)))); \
-  asm volatile("leaq (%%rax), %%rsp" ::"rax"(x));
+#define dill_setjmp(ctx) __extension__ ({\
+    int ret;\
+    asm("lea     LJMPRET%=(%%rip), %%rcx\n\t"\
+        "xor     %%rax, %%rax\n\t"\
+        "mov     %%rbx, (%%rdx)\n\t"\
+        "mov     %%rbp, 8(%%rdx)\n\t"\
+        "mov     %%r12, 16(%%rdx)\n\t"\
+        "mov     %%r13, 24(%%rdx)\n\t"\
+        "mov     %%r14, 32(%%rdx)\n\t"\
+        "mov     %%r15, 40(%%rdx)\n\t"\
+        "mov     %%rsp, 48(%%rdx)\n\t"\
+        "mov     %%rcx, 56(%%rdx)\n\t"\
+        "LJMPRET%=:\n\t"\
+        : "=a" (ret)\
+        : "d" (ctx)\
+        : "memory", "rcx", "rsi", "rdi", "r8", "r9", "r10", "r11", "cc");\
+    ret;\
+})
+#define dill_longjmp(ctx) \
+    asm("movq   56(%%rdx), %%rcx\n\t"\
+        "movq   48(%%rdx), %%rsp\n\t"\
+        "movq   40(%%rdx), %%r15\n\t"\
+        "movq   32(%%rdx), %%r14\n\t"\
+        "movq   24(%%rdx), %%r13\n\t"\
+        "movq   16(%%rdx), %%r12\n\t"\
+        "movq   8(%%rdx), %%rbp\n\t"\
+        "movq   (%%rdx), %%rbx\n\t"\
+        ".cfi_def_cfa %%rdx, 0 \n\t"\
+        ".cfi_offset %%rbx, 0 \n\t"\
+        ".cfi_offset %%rbp, 8 \n\t"\
+        ".cfi_offset %%r12, 16 \n\t"\
+        ".cfi_offset %%r13, 24 \n\t"\
+        ".cfi_offset %%r14, 32 \n\t"\
+        ".cfi_offset %%r15, 40 \n\t"\
+        ".cfi_offset %%rsp, 48 \n\t"\
+        ".cfi_offset %%rip, 56 \n\t"\
+        "jmp    *%%rcx\n\t"\
+        : : "d" (ctx), "a" (1))
+#define dill_setsp(x) \
+    asm(""::"r"(alloca(sizeof(size_t))));\
+    asm volatile("leaq (%%rax), %%rsp"::"rax"(x));
 
 /* Stack switching on X86. */
 #elif defined(__i386__) && !defined DILL_ARCH_FALLBACK
-#define dill_setjmp(ctx)               \
-  __extension__({                      \
-    int ret;                           \
-    asm("movl   $LJMPRET%=, %%ecx\n\t" \
-        "movl   %%ebx, (%%edx)\n\t"    \
-        "movl   %%esi, 4(%%edx)\n\t"   \
-        "movl   %%edi, 8(%%edx)\n\t"   \
-        "movl   %%ebp, 12(%%edx)\n\t"  \
-        "movl   %%esp, 16(%%edx)\n\t"  \
-        "movl   %%ecx, 20(%%edx)\n\t"  \
-        "xorl   %%eax, %%eax\n\t"      \
-        "LJMPRET%=:\n\t"               \
-        : "=a"(ret)                    \
-        : "d"(ctx)                     \
-        : "memory");                   \
-    ret;                               \
-  })
-#define dill_longjmp(ctx)           \
-  asm("movl   (%%edx), %%ebx\n\t"   \
-      "movl   4(%%edx), %%esi\n\t"  \
-      "movl   8(%%edx), %%edi\n\t"  \
-      "movl   12(%%edx), %%ebp\n\t" \
-      "movl   16(%%edx), %%esp\n\t" \
-      "movl   20(%%edx), %%ecx\n\t" \
-      ".cfi_def_cfa %%edx, 0 \n\t"  \
-      ".cfi_offset %%ebx, 0 \n\t"   \
-      ".cfi_offset %%esi, 4 \n\t"   \
-      ".cfi_offset %%edi, 8 \n\t"   \
-      ".cfi_offset %%ebp, 12 \n\t"  \
-      ".cfi_offset %%esp, 16 \n\t"  \
-      ".cfi_offset %%eip, 20 \n\t"  \
-      "jmp    *%%ecx\n\t"           \
-      :                             \
-      : "d"(ctx), "a"(1))
-#define dill_setsp(x)                    \
-  asm("" ::"r"(alloca(sizeof(size_t)))); \
-  asm volatile("leal (%%eax), %%esp" ::"eax"(x));
+#define dill_setjmp(ctx) __extension__ ({\
+    int ret;\
+    asm("movl   $LJMPRET%=, %%ecx\n\t"\
+        "movl   %%ebx, (%%edx)\n\t"\
+        "movl   %%esi, 4(%%edx)\n\t"\
+        "movl   %%edi, 8(%%edx)\n\t"\
+        "movl   %%ebp, 12(%%edx)\n\t"\
+        "movl   %%esp, 16(%%edx)\n\t"\
+        "movl   %%ecx, 20(%%edx)\n\t"\
+        "xorl   %%eax, %%eax\n\t"\
+        "LJMPRET%=:\n\t"\
+        : "=a" (ret) : "d" (ctx) : "memory");\
+    ret;\
+})
+#define dill_longjmp(ctx) \
+    asm("movl   (%%edx), %%ebx\n\t"\
+        "movl   4(%%edx), %%esi\n\t"\
+        "movl   8(%%edx), %%edi\n\t"\
+        "movl   12(%%edx), %%ebp\n\t"\
+        "movl   16(%%edx), %%esp\n\t"\
+        "movl   20(%%edx), %%ecx\n\t"\
+        ".cfi_def_cfa %%edx, 0 \n\t"\
+        ".cfi_offset %%ebx, 0 \n\t"\
+        ".cfi_offset %%esi, 4 \n\t"\
+        ".cfi_offset %%edi, 8 \n\t"\
+        ".cfi_offset %%ebp, 12 \n\t"\
+        ".cfi_offset %%esp, 16 \n\t"\
+        ".cfi_offset %%eip, 20 \n\t"\
+        "jmp    *%%ecx\n\t"\
+        : : "d" (ctx), "a" (1))
+#define dill_setsp(x) \
+    asm(""::"r"(alloca(sizeof(size_t))));\
+    asm volatile("leal (%%eax), %%esp"::"eax"(x));
 
 /* Stack-switching on other microarchitectures. */
 #else
@@ -237,7 +234,7 @@ DILL_EXPORT __attribute__((noinline)) void dill_epilogue(void);
 /* For newer GCCs, -fstack-protector breaks on this; use -fno-stack-protector.
    Alternatively, implement a custom dill_setsp for your microarchitecture. */
 #define dill_setsp(x) \
-  dill_unoptimisable = alloca((char *)alloca(sizeof(size_t)) - (char *)(x));
+    dill_unoptimisable = alloca((char*)alloca(sizeof(size_t)) - (char*)(x));
 #endif
 
 /* Statement expressions are a gcc-ism but they are also supported by clang.
@@ -246,23 +243,23 @@ DILL_EXPORT __attribute__((noinline)) void dill_epilogue(void);
 
 /* A bug in gcc have been observed where name clash between variable in the
    outer scope and a local variable in this macro causes the variable to
-   get weird values. To avoid that, we use fancy names (dill_*__). */
+   get weird values. To avoid that, we use fancy names (dill_*__). */ 
 
-#define dill_go_(fn, ptr, len, bndl)                                           \
-  __extension__({                                                              \
-    sigjmp_buf *dill_ctx__;                                                    \
-    void *dill_stk__ = (ptr);                                                  \
-    int dill_handle__ = dill_prologue(&dill_ctx__, &dill_stk__, (len), (bndl), \
-                                      __FILE__, __LINE__);                     \
-    if (dill_handle__ >= 0) {                                                  \
-      if (!dill_setjmp(*dill_ctx__)) {                                         \
-        dill_setsp(dill_stk__);                                                \
-        fn;                                                                    \
-        dill_epilogue();                                                       \
-      }                                                                        \
-    }                                                                          \
-    dill_handle__;                                                             \
-  })
+#define dill_go_(fn, ptr, len, bndl) \
+    __extension__ ({\
+        sigjmp_buf *dill_ctx__;\
+        void *dill_stk__ = (ptr);\
+        int dill_handle__ = dill_prologue(&dill_ctx__, &dill_stk__, (len),\
+            (bndl), __FILE__, __LINE__);\
+        if(dill_handle__ >= 0) {\
+            if(!dill_setjmp(*dill_ctx__)) {\
+                dill_setsp(dill_stk__);\
+                fn;\
+                dill_epilogue();\
+            }\
+        }\
+        dill_handle__;\
+    })
 
 #define dill_go(fn) dill_go_(fn, NULL, 0, -1)
 #define dill_go_mem(fn, ptr, len) dill_go_(fn, ptr, len, -1)
@@ -270,9 +267,7 @@ DILL_EXPORT __attribute__((noinline)) void dill_epilogue(void);
 #define dill_bundle_go(bndl, fn) dill_go_(fn, NULL, 0, bndl)
 #define dill_bundle_go_mem(bndl, fn, ptr, len) dill_go_(fn, ptr, len, bndl)
 
-struct dill_bundle_storage {
-  char _[64];
-} DILL_ALIGN;
+struct dill_bundle_storage {char _[64];} DILL_ALIGN;
 
 DILL_EXPORT int dill_bundle(void);
 DILL_EXPORT int dill_bundle_mem(struct dill_bundle_storage *mem);
@@ -300,24 +295,35 @@ DILL_EXPORT int dill_yield(void);
 #define DILL_CHRECV 2
 
 struct dill_chclause {
-  int op;
-  int ch;
-  void *val;
-  size_t len;
+    int op;
+    int ch;
+    void *val;
+    size_t len;
 };
 
-struct dill_chstorage {
-  char _[144];
-} DILL_ALIGN;
+struct dill_chstorage {char _[144];} DILL_ALIGN;
 
-DILL_EXPORT int dill_chmake(int chv[2]);
-DILL_EXPORT int dill_chmake_mem(struct dill_chstorage *mem, int chv[2]);
-DILL_EXPORT int dill_chsend(int ch, const void *val, size_t len,
-                            int64_t deadline);
-DILL_EXPORT int dill_chrecv(int ch, void *val, size_t len, int64_t deadline);
-DILL_EXPORT int dill_chdone(int ch);
-DILL_EXPORT int dill_choose(struct dill_chclause *clauses, int nclauses,
-                            int64_t deadline);
+DILL_EXPORT int dill_chmake(
+    int chv[2]);
+DILL_EXPORT int dill_chmake_mem(
+    struct dill_chstorage *mem,
+    int chv[2]);
+DILL_EXPORT int dill_chsend(
+    int ch,
+    const void *val,
+    size_t len,
+    int64_t deadline);
+DILL_EXPORT int dill_chrecv(
+    int ch,
+    void *val,
+    size_t len,
+    int64_t deadline);
+DILL_EXPORT int dill_chdone(
+    int ch);
+DILL_EXPORT int dill_choose(
+    struct dill_chclause *clauses,
+    int nclauses,
+    int64_t deadline);
 
 #if !defined DILL_DISABLE_RAW_NAMES
 #define CHSEND DILL_CHSEND
@@ -339,10 +345,10 @@ DILL_EXPORT int dill_choose(struct dill_chclause *clauses, int nclauses,
 /******************************************************************************/
 
 struct dill_iolist {
-  void *iol_base;
-  size_t iol_len;
-  struct dill_iolist *iol_next;
-  int iol_rsvd;
+    void *iol_base;
+    size_t iol_len;
+    struct dill_iolist *iol_next;
+    int iol_rsvd;
 };
 
 #if !defined DILL_DISABLE_RAW_NAMES
@@ -353,13 +359,26 @@ struct dill_iolist {
 /*  Bytestream sockets.                                                       */
 /******************************************************************************/
 
-DILL_EXPORT int dill_bsend(int s, const void *buf, size_t len,
-                           int64_t deadline);
-DILL_EXPORT int dill_brecv(int s, void *buf, size_t len, int64_t deadline);
-DILL_EXPORT int dill_bsendl(int s, struct dill_iolist *first,
-                            struct dill_iolist *last, int64_t deadline);
-DILL_EXPORT int dill_brecvl(int s, struct dill_iolist *first,
-                            struct dill_iolist *last, int64_t deadline);
+DILL_EXPORT int dill_bsend(
+    int s,
+    const void *buf,
+    size_t len,
+    int64_t deadline);
+DILL_EXPORT int dill_brecv(
+    int s,
+    void *buf,
+    size_t len,
+    int64_t deadline);
+DILL_EXPORT int dill_bsendl(
+    int s,
+    struct dill_iolist *first,
+    struct dill_iolist *last,
+    int64_t deadline);
+DILL_EXPORT int dill_brecvl(
+    int s,
+    struct dill_iolist *first,
+    struct dill_iolist *last,
+    int64_t deadline);
 
 #if !defined DILL_DISABLE_RAW_NAMES
 #define bsend dill_bsend
@@ -372,13 +391,26 @@ DILL_EXPORT int dill_brecvl(int s, struct dill_iolist *first,
 /*  Message sockets.                                                          */
 /******************************************************************************/
 
-DILL_EXPORT int dill_msend(int s, const void *buf, size_t len,
-                           int64_t deadline);
-DILL_EXPORT ssize_t dill_mrecv(int s, void *buf, size_t len, int64_t deadline);
-DILL_EXPORT int dill_msendl(int s, struct dill_iolist *first,
-                            struct dill_iolist *last, int64_t deadline);
-DILL_EXPORT ssize_t dill_mrecvl(int s, struct dill_iolist *first,
-                                struct dill_iolist *last, int64_t deadline);
+DILL_EXPORT int dill_msend(
+    int s,
+    const void *buf,
+    size_t len,
+    int64_t deadline);
+DILL_EXPORT ssize_t dill_mrecv(
+    int s,
+    void *buf,
+    size_t len,
+    int64_t deadline);
+DILL_EXPORT int dill_msendl(
+    int s,
+    struct dill_iolist *first,
+    struct dill_iolist *last,
+    int64_t deadline);
+DILL_EXPORT ssize_t dill_mrecvl(
+    int s,
+    struct dill_iolist *first,
+    struct dill_iolist *last,
+    int64_t deadline);
 
 #if !defined DILL_DISABLE_RAW_NAMES
 #define msend dill_msend
@@ -399,33 +431,49 @@ struct sockaddr;
 #define DILL_IPADDR_PREF_IPV6 4
 #define DILL_IPADDR_MAXSTRLEN 46
 
-struct dill_ipaddr {
-  char _[32];
-};
+struct dill_ipaddr {char _[32];};
 
-DILL_EXPORT int dill_ipaddr_local(struct dill_ipaddr *addr, const char *name,
-                                  int port, int mode);
-DILL_EXPORT int dill_ipaddr_remote(struct dill_ipaddr *addr, const char *name,
-                                   int port, int mode, int64_t deadline);
-DILL_EXPORT int dill_ipaddr_remotes(struct dill_ipaddr *addrs, int naddrs,
-                                    const char *name, int port, int mode,
-                                    int64_t deadline);
-DILL_EXPORT const char *dill_ipaddr_str(const struct dill_ipaddr *addr,
-                                        char *ipstr);
-DILL_EXPORT int dill_ipaddr_family(const struct dill_ipaddr *addr);
+DILL_EXPORT int dill_ipaddr_local(
+    struct dill_ipaddr *addr,
+    const char *name,
+    int port,
+    int mode);
+DILL_EXPORT int dill_ipaddr_remote(
+    struct dill_ipaddr *addr,
+    const char *name,
+    int port,
+    int mode,
+    int64_t deadline);
+DILL_EXPORT int dill_ipaddr_remotes(
+    struct dill_ipaddr *addrs,
+    int naddrs,
+    const char *name,
+    int port,
+    int mode,
+    int64_t deadline);
+DILL_EXPORT const char *dill_ipaddr_str(
+    const struct dill_ipaddr *addr,
+    char *ipstr);
+DILL_EXPORT int dill_ipaddr_family(
+    const struct dill_ipaddr *addr);
 DILL_EXPORT const struct sockaddr *dill_ipaddr_sockaddr(
     const struct dill_ipaddr *addr);
-DILL_EXPORT int dill_ipaddr_len(const struct dill_ipaddr *addr);
-DILL_EXPORT int dill_ipaddr_port(const struct dill_ipaddr *addr);
-DILL_EXPORT void dill_ipaddr_setport(struct dill_ipaddr *addr, int port);
-DILL_EXPORT int dill_ipaddr_equal(const struct dill_ipaddr *addr1,
-                                  const struct dill_ipaddr *addr2,
-                                  int ignore_port);
+DILL_EXPORT int dill_ipaddr_len(
+    const struct dill_ipaddr *addr);
+DILL_EXPORT int dill_ipaddr_port(
+    const struct dill_ipaddr *addr);
+DILL_EXPORT void dill_ipaddr_setport(
+    struct dill_ipaddr *addr,
+    int port);
+DILL_EXPORT int dill_ipaddr_equal(
+    const struct dill_ipaddr *addr1,
+    const struct dill_ipaddr *addr2,
+    int ignore_port);
 
 #if !defined DILL_DISABLE_RAW_NAMES
-#define IPADDR_IPV4 DILL_IPADDR_IPV4
+#define IPADDR_IPV4 DILL_IPADDR_IPV4 
 #define IPADDR_IPV6 DILL_IPADDR_IPV6
-#define IPADDR_PREF_IPV4 DILL_IPADDR_PREF_IPV4
+#define IPADDR_PREF_IPV4 DILL_IPADDR_PREF_IPV4 
 #define IPADDR_PREF_IPV6 DILL_IPADDR_PREF_IPV6
 #define IPADDR_MAXSTRLEN DILL_IPADDR_MAXSTRLEN
 #define ipaddr dill_ipaddr
@@ -445,36 +493,53 @@ DILL_EXPORT int dill_ipaddr_equal(const struct dill_ipaddr *addr1,
 /*  TCP protocol.                                                             */
 /******************************************************************************/
 
-struct dill_tcp_listener_storage {
-  char _[56];
-} DILL_ALIGN;
+struct dill_tcp_listener_storage {char _[56];} DILL_ALIGN;
 
-struct dill_tcp_storage {
-  char _[72];
-} DILL_ALIGN;
+struct dill_tcp_storage {char _[72];} DILL_ALIGN;
 
-DILL_EXPORT int dill_tcp_listen(struct dill_ipaddr *addr, int backlog);
-DILL_EXPORT int dill_tcp_listen_mem(struct dill_ipaddr *addr, int backlog,
-                                    struct dill_tcp_listener_storage *mem);
-DILL_EXPORT int dill_tcp_accept(int s, struct dill_ipaddr *addr,
-                                int64_t deadline);
-DILL_EXPORT int dill_tcp_accept_raw(int s, struct dill_ipaddr *addr,
-                                    int64_t deadline);
-DILL_EXPORT int dill_tcp_accept_mem(int s, struct dill_ipaddr *addr,
-                                    struct dill_tcp_storage *mem,
-                                    int64_t deadline);
-DILL_EXPORT int dill_tcp_connect(const struct dill_ipaddr *addr,
-                                 int64_t deadline);
-DILL_EXPORT int dill_tcp_connect_mem(const struct dill_ipaddr *addr,
-                                     struct dill_tcp_storage *mem,
-                                     int64_t deadline);
-DILL_EXPORT int dill_tcp_done(int s, int64_t deadline);
-DILL_EXPORT int dill_tcp_close(int s, int64_t deadline);
-DILL_EXPORT int dill_tcp_listener_fromfd(int fd);
+DILL_EXPORT int dill_tcp_listen(
+    struct dill_ipaddr *addr,
+    int backlog);
+DILL_EXPORT int dill_tcp_listen_mem(
+    struct dill_ipaddr *addr,
+    int backlog,
+    struct dill_tcp_listener_storage *mem);
+DILL_EXPORT int dill_tcp_accept(
+    int s,
+    struct dill_ipaddr *addr,
+    int64_t deadline);
+DILL_EXPORT int dill_tcp_accept_raw(
+    int s,
+    struct dill_ipaddr *addr,
+    int64_t deadline);
+DILL_EXPORT int dill_tcp_accept_mem(
+    int s,
+    struct dill_ipaddr *addr,
+    struct dill_tcp_storage *mem,
+    int64_t deadline);
+DILL_EXPORT int dill_tcp_connect(
+    const struct dill_ipaddr *addr,
+    int64_t deadline);
+DILL_EXPORT int dill_tcp_connect_mem(
+    const struct dill_ipaddr *addr,
+    struct dill_tcp_storage *mem,
+    int64_t deadline);
+DILL_EXPORT int dill_tcp_done(
+    int s,
+    int64_t deadline);
+DILL_EXPORT int dill_tcp_close(
+    int s,
+    int64_t deadline);
+DILL_EXPORT int dill_tcp_listener_fromfd(
+    int fd);
 DILL_EXPORT int dill_tcp_listener_fromfd_mem(
-    int fd, struct dill_tcp_listener_storage *mem);
-DILL_EXPORT int dill_tcp_fromfd(int fd);
-DILL_EXPORT int dill_tcp_fromfd_mem(int fd, struct dill_tcp_storage *mem);
+    int fd,
+    struct dill_tcp_listener_storage *mem);
+DILL_EXPORT int dill_tcp_fromfd(
+    int fd);
+DILL_EXPORT int dill_tcp_fromfd_mem(
+    int fd,
+    struct dill_tcp_storage *mem);
 
 #if !defined DILL_DISABLE_RAW_NAMES
 #define tcp_listener_storage dill_tcp_listener_storage
@@ -498,39 +563,61 @@ DILL_EXPORT int dill_tcp_fromfd_mem(int fd, struct dill_tcp_storage *mem);
 /*  IPC protocol.                                                            */
 /******************************************************************************/
 
-struct dill_ipc_listener_storage {
-  char _[24];
-} DILL_ALIGN;
+struct dill_ipc_listener_storage {char _[24];} DILL_ALIGN;
 
-struct dill_ipc_storage {
-  char _[72];
-} DILL_ALIGN;
+struct dill_ipc_storage {char _[72];} DILL_ALIGN;
 
-struct dill_ipc_pair_storage {
-  char _[144];
-} DILL_ALIGN;
+struct dill_ipc_pair_storage {char _[144];} DILL_ALIGN;
 
-DILL_EXPORT int dill_ipc_listen(const char *addr, int backlog);
-DILL_EXPORT int dill_ipc_listen_mem(const char *addr, int backlog,
-                                    struct dill_ipc_listener_storage *mem);
-DILL_EXPORT int dill_ipc_accept(int s, int64_t deadline);
-DILL_EXPORT int dill_ipc_accept_mem(int s, struct dill_ipc_storage *mem,
-                                    int64_t deadline);
-DILL_EXPORT int dill_ipc_connect(const char *addr, int64_t deadline);
-DILL_EXPORT int dill_ipc_connect_mem(const char *addr,
-                                     struct dill_ipc_storage *mem,
-                                     int64_t deadline);
-DILL_EXPORT int dill_ipc_sendfd(int s, int fd, int64_t deadline);
-DILL_EXPORT int dill_ipc_recvfd(int s, int64_t deadline);
-DILL_EXPORT int dill_ipc_done(int s, int64_t deadline);
-DILL_EXPORT int dill_ipc_close(int s, int64_t deadline);
-DILL_EXPORT int dill_ipc_listener_fromfd(int fd);
+DILL_EXPORT int dill_ipc_listen(
+    const char *addr,
+    int backlog);
+DILL_EXPORT int dill_ipc_listen_mem(
+    const char *addr,
+    int backlog,
+    struct dill_ipc_listener_storage *mem);
+DILL_EXPORT int dill_ipc_accept(
+    int s,
+    int64_t deadline);
+DILL_EXPORT int dill_ipc_accept_mem(
+    int s,
+    struct dill_ipc_storage *mem,
+    int64_t deadline);
+DILL_EXPORT int dill_ipc_connect(
+    const char *addr,
+    int64_t deadline);
+DILL_EXPORT int dill_ipc_connect_mem(
+    const char *addr,
+    struct dill_ipc_storage *mem,
+    int64_t deadline);
+DILL_EXPORT int dill_ipc_sendfd(
+    int s,
+    int fd,
+    int64_t deadline);
+DILL_EXPORT int dill_ipc_recvfd(
+    int s,
+    int64_t deadline);
+DILL_EXPORT int dill_ipc_done(
+    int s,
+    int64_t deadline);
+DILL_EXPORT int dill_ipc_close(
+    int s,
+    int64_t deadline);
+DILL_EXPORT int dill_ipc_listener_fromfd(
+    int fd);
 DILL_EXPORT int dill_ipc_listener_fromfd_mem(
-    int fd, struct dill_ipc_listener_storage *mem);
-DILL_EXPORT int dill_ipc_fromfd(int fd);
-DILL_EXPORT int dill_ipc_fromfd_mem(int fd, struct dill_ipc_storage *mem);
-DILL_EXPORT int dill_ipc_pair(int s[2]);
-DILL_EXPORT int dill_ipc_pair_mem(struct dill_ipc_pair_storage *mem, int s[2]);
+    int fd,
+    struct dill_ipc_listener_storage *mem);
+DILL_EXPORT int dill_ipc_fromfd(
+    int fd);
+DILL_EXPORT int dill_ipc_fromfd_mem(
+    int fd,
+    struct dill_ipc_storage *mem);
+DILL_EXPORT int dill_ipc_pair(
+    int s[2]);
+DILL_EXPORT int dill_ipc_pair_mem(
+    struct dill_ipc_pair_storage *mem,
+    int s[2]);
 
 #if !defined DILL_DISABLE_RAW_NAMES
 #define ipc_listener_storage dill_ipc_listener_storage
@@ -559,17 +646,22 @@ DILL_EXPORT int dill_ipc_pair_mem(struct dill_ipc_pair_storage *mem, int s[2]);
 /*  Messages are prefixed by size.                                            */
 /******************************************************************************/
 
-struct dill_prefix_storage {
-  char _[56];
-} DILL_ALIGN;
+struct dill_prefix_storage {char _[56];} DILL_ALIGN;
 
 #define DILL_PREFIX_BIG_ENDIAN 0
 #define DILL_PREFIX_LITTLE_ENDIAN 1
 
-DILL_EXPORT int dill_prefix_attach(int s, size_t hdrlen, int flags);
-DILL_EXPORT int dill_prefix_attach_mem(int s, size_t hdrlen, int flags,
-                                       struct dill_prefix_storage *mem);
-DILL_EXPORT int dill_prefix_detach(int s);
+DILL_EXPORT int dill_prefix_attach(
+    int s,
+    size_t hdrlen,
+    int flags);
+DILL_EXPORT int dill_prefix_attach_mem(
+    int s,
+    size_t hdrlen,
+    int flags,
+    struct dill_prefix_storage *mem);
+DILL_EXPORT int dill_prefix_detach(
+    int s);
 
 #if !defined DILL_DISABLE_RAW_NAMES
 #define PREFIX_BIG_ENDIAN DILL_PREFIX_BIG_ENDIAN
@@ -585,15 +677,20 @@ DILL_EXPORT int dill_prefix_detach(int s);
 /*  Messages are suffixed by specified string of bytes.                       */
 /******************************************************************************/
 
-struct dill_suffix_storage {
-  char _[128];
-} DILL_ALIGN;
+struct dill_suffix_storage {char _[128];} DILL_ALIGN;
 
-DILL_EXPORT int dill_suffix_attach(int s, const void *suffix, size_t suffixlen);
-DILL_EXPORT int dill_suffix_attach_mem(int s, const void *suffix,
-                                       size_t suffixlen,
-                                       struct dill_suffix_storage *mem);
-DILL_EXPORT int dill_suffix_detach(int s, int64_t deadline);
+DILL_EXPORT int dill_suffix_attach(
+    int s,
+    const void *suffix,
+    size_t suffixlen);
+DILL_EXPORT int dill_suffix_attach_mem(
+    int s,
+    const void *suffix,
+    size_t suffixlen,
+    struct dill_suffix_storage *mem);
+DILL_EXPORT int dill_suffix_detach(
+    int s,
+    int64_t deadline);
 
 #if !defined DILL_DISABLE_RAW_NAMES
 #define suffix_storage dill_suffix_storage
@@ -607,25 +704,37 @@ DILL_EXPORT int dill_suffix_detach(int s, int64_t deadline);
 /*  Each UDP packet is treated as a separate message.                         */
 /******************************************************************************/
 
-struct dill_udp_storage {
-  char _[72];
-} DILL_ALIGN;
+struct dill_udp_storage {char _[72];} DILL_ALIGN;
 
-DILL_EXPORT int dill_udp_open(struct dill_ipaddr *local,
-                              const struct dill_ipaddr *remote);
-DILL_EXPORT int dill_udp_open_mem(struct dill_ipaddr *local,
-                                  const struct dill_ipaddr *remote,
-                                  struct dill_udp_storage *mem);
-DILL_EXPORT int dill_udp_send(int s, const struct dill_ipaddr *addr,
-                              const void *buf, size_t len);
-DILL_EXPORT ssize_t dill_udp_recv(int s, struct dill_ipaddr *addr, void *buf,
-                                  size_t len, int64_t deadline);
-DILL_EXPORT int dill_udp_sendl(int s, const struct dill_ipaddr *addr,
-                               struct dill_iolist *first,
-                               struct dill_iolist *last);
-DILL_EXPORT ssize_t dill_udp_recvl(int s, struct dill_ipaddr *addr,
-                                   struct dill_iolist *first,
-                                   struct dill_iolist *last, int64_t deadline);
+DILL_EXPORT int dill_udp_open(
+    struct dill_ipaddr *local,
+    const struct dill_ipaddr *remote);
+DILL_EXPORT int dill_udp_open_mem(
+    struct dill_ipaddr *local,
+    const struct dill_ipaddr *remote,
+    struct dill_udp_storage *mem);
+DILL_EXPORT int dill_udp_send(
+    int s,
+    const struct dill_ipaddr *addr,
+    const void *buf,
+    size_t len);
+DILL_EXPORT ssize_t dill_udp_recv(
+    int s,
+    struct dill_ipaddr *addr,
+    void *buf,
+    size_t len,
+    int64_t deadline);
+DILL_EXPORT int dill_udp_sendl(
+    int s,
+    const struct dill_ipaddr *addr,
+    struct dill_iolist *first,
+    struct dill_iolist *last);
+DILL_EXPORT ssize_t dill_udp_recvl(
+    int s,
+    struct dill_ipaddr *addr,
+    struct dill_iolist *first,
+    struct dill_iolist *last,
+    int64_t deadline);
 
 #if !defined DILL_DISABLE_RAW_NAMES
 #define udp_storage dill_udp_storage
@@ -641,28 +750,53 @@ DILL_EXPORT ssize_t dill_udp_recvl(int s, struct dill_ipaddr *addr,
 /*  HTTP                                                                      */
 /******************************************************************************/
 
-struct dill_http_storage {
-  char _[1296];
-} DILL_ALIGN;
+struct dill_http_storage {char _[1296];} DILL_ALIGN;
 
-DILL_EXPORT int dill_http_attach(int s);
-DILL_EXPORT int dill_http_attach_mem(int s, struct dill_http_storage *mem);
-DILL_EXPORT int dill_http_done(int s, int64_t deadline);
-DILL_EXPORT int dill_http_detach(int s, int64_t deadline);
-DILL_EXPORT int dill_http_sendrequest(int s, const char *command,
-                                      const char *resource, int64_t deadline);
-DILL_EXPORT int dill_http_recvrequest(int s, char *command, size_t commandlen,
-                                      char *resource, size_t resourcelen,
-                                      int64_t deadline);
-DILL_EXPORT int dill_http_sendstatus(int s, int status, const char *reason,
-                                     int64_t deadline);
-DILL_EXPORT int dill_http_recvstatus(int s, char *reason, size_t reasonlen,
-                                     int64_t deadline);
-DILL_EXPORT int dill_http_sendfield(int s, const char *name, const char *value,
-                                    int64_t deadline);
-DILL_EXPORT int dill_http_recvfield(int s, char *name, size_t namelen,
-                                    char *value, size_t valuelen,
-                                    int64_t deadline);
+DILL_EXPORT int dill_http_attach(
+    int s);
+DILL_EXPORT int dill_http_attach_mem(
+    int s,
+    struct dill_http_storage *mem);
+DILL_EXPORT int dill_http_done(
+    int s,
+    int64_t deadline);
+DILL_EXPORT int dill_http_detach(
+    int s,
+    int64_t deadline);
+DILL_EXPORT int dill_http_sendrequest(
+    int s,
+    const char *command,
+    const char *resource,
+    int64_t deadline);
+DILL_EXPORT int dill_http_recvrequest(
+    int s,
+    char *command,
+    size_t commandlen,
+    char *resource,
+    size_t resourcelen,
+    int64_t deadline);
+DILL_EXPORT int dill_http_sendstatus(
+    int s,
+    int status,
+    const char *reason,
+    int64_t deadline);
+DILL_EXPORT int dill_http_recvstatus(
+    int s,
+    char *reason,
+    size_t reasonlen,
+    int64_t deadline);
+DILL_EXPORT int dill_http_sendfield(
+    int s,
+    const char *name,
+    const char *value,
+    int64_t deadline);
+DILL_EXPORT int dill_http_recvfield(
+    int s,
+    char *name,
+    size_t namelen,
+    char *value,
+    size_t valuelen,
+    int64_t deadline);
 
 #if !defined DILL_DISABLE_RAW_NAMES
 #define http_storage dill_http_storage
@@ -684,21 +818,32 @@ DILL_EXPORT int dill_http_recvfield(int s, char *name, size_t namelen,
 /*  TLS protocol.                                                             */
 /******************************************************************************/
 
-struct dill_tls_storage {
-  char _[72];
-} DILL_ALIGN;
+struct dill_tls_storage {char _[72];} DILL_ALIGN;
 
-DILL_EXPORT int dill_tls_attach_server(int s, const char *cert,
-                                       const char *pkey, int64_t deadline);
-DILL_EXPORT int dill_tls_attach_server_mem(int s, const char *cert,
-                                           const char *pkey,
-                                           struct dill_tls_storage *mem,
-                                           int64_t deadline);
-DILL_EXPORT int dill_tls_attach_client(int s, int64_t deadline);
-DILL_EXPORT int dill_tls_attach_client_mem(int s, struct dill_tls_storage *mem,
-                                           int64_t deadline);
-DILL_EXPORT int dill_tls_done(int s, int64_t deadline);
-DILL_EXPORT int dill_tls_detach(int s, int64_t deadline);
+DILL_EXPORT int dill_tls_attach_server(
+    int s,
+    const char *cert,
+    const char *pkey,
+    int64_t deadline);
+DILL_EXPORT int dill_tls_attach_server_mem(
+    int s,
+    const char *cert,
+    const char *pkey,
+    struct dill_tls_storage *mem,
+    int64_t deadline);
+DILL_EXPORT int dill_tls_attach_client(
+    int s,
+    int64_t deadline);
+DILL_EXPORT int dill_tls_attach_client_mem(
+    int s,
+    struct dill_tls_storage *mem,
+    int64_t deadline);
+DILL_EXPORT int dill_tls_done(
+    int s,
+    int64_t deadline);
+DILL_EXPORT int dill_tls_detach(
+    int s,
+    int64_t deadline);
 
 #if !defined DILL_DISABLE_RAW_NAMES
 #define tls_storage dill_tls_storage
@@ -714,22 +859,32 @@ DILL_EXPORT int dill_tls_detach(int s, int64_t deadline);
 /*  DTLS protocol.                                                            */
 /******************************************************************************/
 
-struct dill_dtls_storage {
-  char _[88];
-} DILL_ALIGN;
+struct dill_dtls_storage {char _[88];} DILL_ALIGN;
 
-DILL_EXPORT int dill_dtls_attach_server(int s, const char *cert,
-                                        const char *pkey, int64_t deadline);
-DILL_EXPORT int dill_dtls_attach_server_mem(int s, const char *cert,
-                                            const char *pkey,
-                                            struct dill_dtls_storage *mem,
-                                            int64_t deadline);
-DILL_EXPORT int dill_dtls_attach_client(int s, int64_t deadline);
-DILL_EXPORT int dill_dtls_attach_client_mem(int s,
-                                            struct dill_dtls_storage *mem,
-                                            int64_t deadline);
-DILL_EXPORT int dill_dtls_done(int s, int64_t deadline);
-DILL_EXPORT int dill_dtls_detach(int s, int64_t deadline);
+DILL_EXPORT int dill_dtls_attach_server(
+    int s,
+    const char *cert,
+    const char *pkey,
+    int64_t deadline);
+DILL_EXPORT int dill_dtls_attach_server_mem(
+    int s,
+    const char *cert,
+    const char *pkey,
+    struct dill_dtls_storage *mem,
+    int64_t deadline);
+DILL_EXPORT int dill_dtls_attach_client(
+    int s,
+    int64_t deadline);
+DILL_EXPORT int dill_dtls_attach_client_mem(
+    int s,
+    struct dill_dtls_storage *mem,
+    int64_t deadline);
+DILL_EXPORT int dill_dtls_done(
+    int s,
+    int64_t deadline);
+DILL_EXPORT int dill_dtls_detach(
+    int s,
+    int64_t deadline);
 
 #if !defined DILL_DISABLE_RAW_NAMES
 #define dtls_storage dill_dtls_storage
@@ -747,50 +902,93 @@ DILL_EXPORT int dill_dtls_detach(int s, int64_t deadline);
 /*  WebSockets protocol.                                                      */
 /******************************************************************************/
 
-struct dill_ws_storage {
-  char _[176];
-} DILL_ALIGN;
+struct dill_ws_storage {char _[176];} DILL_ALIGN;
 
 #define DILL_WS_BINARY 0
 #define DILL_WS_TEXT 1
 #define DILL_WS_NOHTTP 2
 
-DILL_EXPORT int dill_ws_attach_client(int s, int flags, const char *resource,
-                                      const char *host, int64_t deadline);
-DILL_EXPORT int dill_ws_attach_client_mem(int s, int flags,
-                                          const char *resource,
-                                          const char *host,
-                                          struct dill_ws_storage *mem,
-                                          int64_t deadline);
-DILL_EXPORT int dill_ws_attach_server(int s, int flags, char *resource,
-                                      size_t resourcelen, char *host,
-                                      size_t hostlen, int64_t deadline);
-DILL_EXPORT int dill_ws_attach_server_mem(int s, int flags, char *resource,
-                                          size_t resourcelen, char *host,
-                                          size_t hostlen,
-                                          struct dill_ws_storage *mem,
-                                          int64_t deadline);
-DILL_EXPORT int dill_ws_send(int s, int flags, const void *buf, size_t len,
-                             int64_t deadline);
-DILL_EXPORT ssize_t dill_ws_recv(int s, int *flags, void *buf, size_t len,
-                                 int64_t deadline);
-DILL_EXPORT int dill_ws_sendl(int s, int flags, struct dill_iolist *first,
-                              struct dill_iolist *last, int64_t deadline);
-DILL_EXPORT ssize_t dill_ws_recvl(int s, int *flags, struct dill_iolist *first,
-                                  struct dill_iolist *last, int64_t deadline);
-DILL_EXPORT int dill_ws_done(int s, int status, const void *buf, size_t len,
-                             int64_t deadline);
-DILL_EXPORT int dill_ws_detach(int s, int status, const void *buf, size_t len,
-                               int64_t deadline);
-DILL_EXPORT ssize_t dill_ws_status(int s, int *status, void *buf, size_t len);
+DILL_EXPORT int dill_ws_attach_client(
+    int s,
+    int flags,
+    const char *resource,
+    const char *host,
+    int64_t deadline);
+DILL_EXPORT int dill_ws_attach_client_mem(
+    int s,
+    int flags,
+    const char *resource,
+    const char *host,
+    struct dill_ws_storage *mem,
+    int64_t deadline);
+DILL_EXPORT int dill_ws_attach_server(
+    int s,
+    int flags,
+    char *resource,
+    size_t resourcelen,
+    char *host,
+    size_t hostlen,
+    int64_t deadline);
+DILL_EXPORT int dill_ws_attach_server_mem(
+    int s,
+    int flags,
+    char *resource,
+    size_t resourcelen,
+    char *host,
+    size_t hostlen,
+    struct dill_ws_storage *mem,
+    int64_t deadline);
+DILL_EXPORT int dill_ws_send(
+    int s,
+    int flags,
+    const void *buf,
+    size_t len,
+    int64_t deadline);
+DILL_EXPORT ssize_t dill_ws_recv(
+    int s,
+    int *flags,
+    void *buf,
+    size_t len,
+    int64_t deadline);
+DILL_EXPORT int dill_ws_sendl(
+    int s,
+    int flags,
+    struct dill_iolist *first,
+    struct dill_iolist *last,
+    int64_t deadline);
+DILL_EXPORT ssize_t dill_ws_recvl(
+    int s,
+    int *flags,
+    struct dill_iolist *first,
+    struct dill_iolist *last,
+    int64_t deadline);
+DILL_EXPORT int dill_ws_done(
+    int s,
+    int status,
+    const void *buf,
+    size_t len,
+    int64_t deadline);
+DILL_EXPORT int dill_ws_detach(
+    int s,
+    int status,
+    const void *buf,
+    size_t len,
+    int64_t deadline);
+DILL_EXPORT ssize_t dill_ws_status(
+    int s,
+    int *status,
+    void *buf,
+    size_t len);
 
 /* Helper functions for those who want to implement HTTP exchange by hand. */
 
 #define WS_KEY_SIZE 32
 
-DILL_EXPORT int dill_ws_request_key(char *request_key);
-DILL_EXPORT int dill_ws_response_key(const char *request_key,
-                                     char *response_key);
+DILL_EXPORT int dill_ws_request_key(
+    char *request_key);
+DILL_EXPORT int dill_ws_response_key(
+    const char *request_key,
+    char *response_key);
 
 #if !defined DILL_DISABLE_RAW_NAMES
 #define WS_BINARY DILL_WS_BINARY
@@ -832,33 +1030,29 @@ DILL_EXPORT int dill_ws_response_key(const char *request_key,
 #define DILL_SOCKS5_COMMAND_NOT_SUPPORTED (0x07)
 #define DILL_SOCKS5_ADDRESS_TYPE_NOT_SUPPORTED (0x08)
 
+
 typedef int dill_socks5_auth_function(const char *username,
-                                      const char *password);
+    const char *password);
 
-DILL_EXPORT int dill_socks5_client_connect(int s, const char *username,
-                                           const char *password,
-                                           struct dill_ipaddr *addr,
-                                           int64_t deadline);
+DILL_EXPORT int dill_socks5_client_connect(
+    int s, const char *username, const char *password,
+    struct dill_ipaddr *addr, int64_t deadline);
 
-DILL_EXPORT int dill_socks5_client_connectbyname(int s, const char *username,
-                                                 const char *password,
-                                                 const char *hostname, int port,
-                                                 int64_t deadline);
+DILL_EXPORT int dill_socks5_client_connectbyname(
+    int s, const char *username, const char *password, const char *hostname,
+    int port, int64_t deadline);
 
-DILL_EXPORT int dill_socks5_proxy_auth(int s,
-                                       dill_socks5_auth_function *auth_fn,
-                                       int64_t deadline);
+DILL_EXPORT int dill_socks5_proxy_auth(
+    int s, dill_socks5_auth_function *auth_fn, int64_t deadline);
 
-DILL_EXPORT int dill_socks5_proxy_recvcommand(int s, struct dill_ipaddr *ipaddr,
-                                              int64_t deadline);
+DILL_EXPORT int dill_socks5_proxy_recvcommand(
+    int s, struct dill_ipaddr *ipaddr, int64_t deadline);
 
-DILL_EXPORT int dill_socks5_proxy_recvcommandbyname(int s, char *host,
-                                                    int *port,
-                                                    int64_t deadline);
+DILL_EXPORT int dill_socks5_proxy_recvcommandbyname(
+    int s, char *host, int *port, int64_t deadline);
 
-DILL_EXPORT int dill_socks5_proxy_sendreply(int s, int reply,
-                                            struct dill_ipaddr *ipaddr,
-                                            int64_t deadline);
+DILL_EXPORT int dill_socks5_proxy_sendreply(
+    int s, int reply, struct dill_ipaddr *ipaddr, int64_t deadline);
 
 #if !defined DILL_DISABLE_RAW_NAMES
 
@@ -890,15 +1084,23 @@ DILL_EXPORT int dill_socks5_proxy_sendreply(int s, int reply,
 /*  Implementes terminal handshake on the top of any message-based protocol.  */
 /******************************************************************************/
 
-struct dill_term_storage {
-  char _[88];
-} DILL_ALIGN;
+struct dill_term_storage {char _[88];} DILL_ALIGN;
 
-DILL_EXPORT int dill_term_attach(int s, const void *buf, size_t len);
-DILL_EXPORT int dill_term_attach_mem(int s, const void *buf, size_t len,
-                                     struct dill_term_storage *mem);
-DILL_EXPORT int dill_term_done(int s, int64_t deadline);
-DILL_EXPORT int dill_term_detach(int s, int64_t deadline);
+DILL_EXPORT int dill_term_attach(
+    int s,
+    const void *buf,
+    size_t len);
+DILL_EXPORT int dill_term_attach_mem(
+    int s,
+    const void *buf,
+    size_t len,
+    struct dill_term_storage *mem);
+DILL_EXPORT int dill_term_done(
+    int s,
+    int64_t deadline);
+DILL_EXPORT int dill_term_detach(
+    int s,
+    int64_t deadline);
 
 #if !defined DILL_DISABLE_RAW_NAMES
 #define term_storage dill_term_storage
@@ -913,8 +1115,10 @@ DILL_EXPORT int dill_term_detach(int s, int64_t deadline);
 /* Implements concurrent TCP connecting to the remote endpoint.               */
 /******************************************************************************/
 
-DILL_EXPORT int dill_happyeyeballs_connect(const char *name, int port,
-                                           int64_t deadline);
+DILL_EXPORT int dill_happyeyeballs_connect(
+    const char *name,
+    int port,
+    int64_t deadline);
 
 #if !defined DILL_DISABLE_RAW_NAMES
 #define happyeyeballs_connect dill_happyeyeballs_connect
@@ -927,3 +1131,4 @@ DILL_EXPORT int dill_happyeyeballs_connect(const char *name, int port,
 #endif
 
 #endif
+
